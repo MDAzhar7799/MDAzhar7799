@@ -48,12 +48,19 @@ FAST2SMS_API_KEY = os.environ.get(
     'kU38MfPKnWHJYb46wpGxByaevOFSo1R7jcgCudmZNlEiDhQs0XxbPQmNT6hFta5sO7Egcr1lXyWH2ivC'
 )
 
-# File upload paths
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
-QR_CODE_FOLDER = os.path.join(UPLOAD_FOLDER, 'qr_codes')
-PAYMENT_FOLDER = os.path.join(UPLOAD_FOLDER, 'payment_screenshots')
-FOOD_IMAGE_FOLDER = os.path.join(UPLOAD_FOLDER, 'food_images')
-SHOP_LOGO_FOLDER = os.path.join(UPLOAD_FOLDER, 'shop_logos')
+# File upload paths (dynamically adapt to /tmp in read-only serverless environments)
+if os.environ.get('VERCEL'):
+    UPLOAD_FOLDER = '/tmp/uploads'
+    QR_CODE_FOLDER = os.path.join(UPLOAD_FOLDER, 'qr_codes')
+    PAYMENT_FOLDER = os.path.join(UPLOAD_FOLDER, 'payment_screenshots')
+    FOOD_IMAGE_FOLDER = os.path.join(UPLOAD_FOLDER, 'food_images')
+    SHOP_LOGO_FOLDER = os.path.join(UPLOAD_FOLDER, 'shop_logos')
+else:
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    QR_CODE_FOLDER = os.path.join(UPLOAD_FOLDER, 'qr_codes')
+    PAYMENT_FOLDER = os.path.join(UPLOAD_FOLDER, 'payment_screenshots')
+    FOOD_IMAGE_FOLDER = os.path.join(UPLOAD_FOLDER, 'food_images')
+    SHOP_LOGO_FOLDER = os.path.join(UPLOAD_FOLDER, 'shop_logos')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_UPLOAD_SIZE', 16 * 1024 * 1024))  # 16MB default
