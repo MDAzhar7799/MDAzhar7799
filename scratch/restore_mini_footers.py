@@ -17,7 +17,7 @@ for file in mini_files:
     content = re.sub(r'\s*/\* ===== FOOTER STYLES ===== \*/.*?\.copyright \{.*?\n\s*\}', '', content, flags=re.DOTALL)
     
     # Replace the injected large footer HTML with the mini footer
-    mini_footer = '    <footer>\n        <p>© 2026 FoodExpress. System Administration. Power by AZHAR™</p>\n    </footer>'
+    mini_footer = '    <footer>\n        <p>© 2026 Azhar-foodExp. System Administration. Power by AZHAR™</p>\n    </footer>'
     content = re.sub(r'<footer class="footer-main">.*?</footer>', mini_footer, content, flags=re.DOTALL)
     
     with open(path, 'w', encoding='utf-8') as f:
@@ -39,7 +39,7 @@ if os.path.exists(login_path):
             <div class="footer-brand-col">
                 <div class="flabel">
                     <div class="flogo"><i class="fas fa-utensils"></i></div>
-                    <h2>FoodExpress</h2>
+                    <h2>Azhar-foodExp</h2>
                 </div>
                 <p>Order smart, skip queues, eat better. Built for LPU & LawGate students, staff and everyone on campus who values their time.</p>
             </div>
@@ -60,7 +60,7 @@ if os.path.exists(login_path):
             </div>
         </div>
         <div class="footer-bottom">
-            © 2026 FoodExpress — Made by MD Azhar | Built for everyone, loved by students
+            © 2026 Azhar-foodExp — Made by MD Azhar | Built for everyone, loved by students
         </div>
     </footer>"""
     

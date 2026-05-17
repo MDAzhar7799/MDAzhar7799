@@ -8,7 +8,7 @@ with open(path, 'r', encoding='utf-8') as f:
 # 1. Text Replacements
 replacements = {
     'Mission Archive': 'Order History',
-    'Day-by-Day logistical history of the FoodExpress grid.': 'Day-by-Day history of all orders.',
+    'Day-by-Day logistical history of the Azhar-foodExp grid.': 'Day-by-Day history of all orders.',
     "Today's Payload Volume": "Today's Orders",
     ' Missions Active': ' Orders Today',
     'Archive Status': 'System Status',

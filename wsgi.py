@@ -1,5 +1,5 @@
 """
-wsgi.py — Production entry point for FoodExpress
+wsgi.py — Production entry point for Azhar-foodExp
 Used by Gunicorn / any WSGI server for deployment
 """
 # Initialize the database schema for production
