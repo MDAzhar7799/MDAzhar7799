@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS orders (
     delivery_boy_name TEXT,
     delivery_boy_phone TEXT,
     current_location TEXT,
+    is_notified INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
@@ -155,6 +156,15 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 """)
 
 conn.commit()
+
+# ============================================================
+# SAFE MIGRATIONS - add columns to existing tables if missing
+# ============================================================
+try:
+    cursor.execute("ALTER TABLE orders ADD COLUMN is_notified INTEGER DEFAULT 0")
+    conn.commit()
+except Exception:
+    conn.rollback()
 
 # Insert or update default admins to match local database passwords exactly
 admins_to_seed = [
