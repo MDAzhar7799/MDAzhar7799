@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FoodExpress – Order Smart, Eat Better</title>
     <meta name="description" content="Order food online from LPU & LawGate shops. Skip queues, get food delivered fast. Built for students and everyone!">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#22c55e">
+    <link rel="apple-touch-icon" href="/static/brand.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -864,6 +867,17 @@
         document.getElementById('mobileSidebar').classList.toggle('active');
         document.getElementById('mobileOverlay').classList.toggle('active');
         document.body.style.overflow = document.getElementById('mobileSidebar').classList.contains('active') ? 'hidden' : '';
+    }
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/static/sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
     }
 </script>
 
