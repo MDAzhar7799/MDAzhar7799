@@ -18,5 +18,3 @@ user_logins.txt
 # OS metadata
 .DS_Store
 Thumbs.db
-
-.vercel

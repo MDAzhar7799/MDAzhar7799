@@ -34,7 +34,7 @@ import schema_init
 
 # ─── PRODUCTION-GRADE CONFIG ─────────────────────────────────
 # Stable secret key from env (fallback for dev only)
-app.secret_key = os.environ.get('SECRET_KEY', 'Azhar-Azhar-foodExp-SuperSecret-2026-LPU-LawGate-xK9mP2qR')
+app.secret_key = os.environ.get('SECRET_KEY', 'Azhar-FoodExpress-SuperSecret-2026-LPU-LawGate-xK9mP2qR')
 
 # Session security settings
 app.config['SESSION_COOKIE_SECURE'] = False      # Set True when behind HTTPS
@@ -82,7 +82,7 @@ app.config['SMTP_PORT'] = int(os.environ.get('SMTP_PORT', 587))
 app.config['SMTP_USER'] = os.environ.get('SMTP_USER', 'MS_XwNkdY@test-68zxl273emm4j905.mlsender.net')
 app.config['SMTP_PASS'] = os.environ.get('SMTP_PASS', 'mlsn.7448967837fd568925745ea11a87fb3f5cfb8b9a82f79077d3a06fa700c4c629')
 app.config['SENDER_EMAIL'] = os.environ.get('SENDER_EMAIL', 'noreply@test-68zxl273emm4j905.mlsender.net')
-app.config['SENDER_NAME'] = os.environ.get('SENDER_NAME', 'Azhar-foodExp Notifications')
+app.config['SENDER_NAME'] = os.environ.get('SENDER_NAME', 'FoodExpress Notifications')
 
 
 # ============================================
@@ -789,7 +789,7 @@ def notify_pickup_ready(order_id):
                 </div>
                 <p>Please visit the shop to collect your delicious food.</p>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 12px; color: #888;">This is an automated notification from Azhar-foodExp. Please do not reply to this email.</p>
+                <p style="font-size: 12px; color: #888;">This is an automated notification from FoodExpress. Please do not reply to this email.</p>
             </div>
         </body>
         </html>

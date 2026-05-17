@@ -9,7 +9,7 @@ for root, dirs, files in os.walk(templates_dir):
             with open(path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            new_content = content.replace('Azhar-foodExp - Shopkeeper', 'Azhar-foodExp')
+            new_content = content.replace('FoodExpress - Shopkeeper', 'FoodExpress')
             
             if new_content != content:
                 with open(path, 'w', encoding='utf-8') as f:

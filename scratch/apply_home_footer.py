@@ -57,7 +57,7 @@ new_html = """    <footer>
             <div class="footer-brand-col">
                 <div class="flabel">
                     <div class="flogo"><i class="fas fa-utensils"></i></div>
-                    <h2>Azhar-foodExp</h2>
+                    <h2>FoodExpress</h2>
                 </div>
                 <p>A premium food ordering experience for students and faculty across LPU & LawGate. Fresh food, fast delivery, every time.</p>
             </div>
@@ -82,7 +82,7 @@ new_html = """    <footer>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Azhar-foodExp — Made by MD Azhar | Built for everyone, loved by students</p>
+            <p>© 2026 FoodExpress — Made by MD Azhar | Built for everyone, loved by students</p>
         </div>
     </footer>"""
 

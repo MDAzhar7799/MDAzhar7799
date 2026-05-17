@@ -9,7 +9,7 @@ uniform_footer_html = """    <footer class="footer-main">
             <div class="footer-col">
                 <div class="footer-brand">
                     <i class="fas fa-utensils"></i>
-                    <h2>Azhar-foodExp</h2>
+                    <h2>FoodExpress</h2>
                 </div>
                 <p class="footer-desc">
                     Order smart, skip queues, eat better. Built for LPU & LawGate students, staff and everyone on campus who values their time.
@@ -39,7 +39,7 @@ uniform_footer_html = """    <footer class="footer-main">
             </div>
         </div>
         <div class="copyright">
-            © 2026 Azhar-foodExp — Made by MD Azhar | Built for everyone, loved by students
+            © 2026 FoodExpress — Made by MD Azhar | Built for everyone, loved by students
         </div>
     </footer>"""
 

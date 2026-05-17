@@ -5,7 +5,7 @@ directory = r'c:\Users\MD AZHAR\Desktop\lawgate & lpu online food\lpu-food pytho
 
 replacements = {
     r'Entity Protocol \(Shops\)': 'Shop Management',
-    r'Monitor and manage all culinary nodes within the Azhar-foodExp grid.': 'Manage and monitor all active shops on the Azhar-foodExp platform.',
+    r'Monitor and manage all culinary nodes within the FoodExpress grid.': 'Manage and monitor all active shops on the FoodExpress platform.',
     r'Node Name': 'Shop Name',
     r'Controller': 'Owner',
     r'Deployment': 'Date Created',
