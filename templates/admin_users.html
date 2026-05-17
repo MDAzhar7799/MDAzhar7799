@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personnel Directory - FoodExpress Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-light: #f3f4f6;
+            --white: #ffffff;
+            --header-gradient: linear-gradient(to right, #1a3a32, #2d6a4f);
+            --text-dark: #111827;
+            --text-muted: #6b7280;
+            --blue: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+ 
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--header-gradient);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .brand i { font-size: 1.4rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
+        .brand h1 { font-size: 1.25rem; font-weight: 700; }
+ 
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-item { color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .logout-btn {
+            background: #a7f3d0;
+            color: #ef4444;
+            padding: 10px 22px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+ 
+        /* ===== CONTAINER ===== */
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+ 
+        .page-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 5px; }
+        .page-header p { color: var(--text-muted); font-size: 1rem; margin-bottom: 30px; }
+ 
+        .card { background: white; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+ 
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 20px 25px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); border-bottom: 2px solid #f3f4f6; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 20px 25px; font-size: 1rem; border-bottom: 1px solid #f3f4f6; font-weight: 500; }
+ 
+        .user-id { font-weight: 850; color: var(--blue); font-size: 1rem; }
+        .action-link { 
+            color: var(--blue); 
+            text-decoration: none; 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+        }
+        .action-link:hover { background: var(--blue); color: white; transform: translateY(-2px); }
+ 
+        footer { background: #020617; padding: 60px 20px; color: #94a3b8; text-align: center; margin-top: 100px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('admin_dashboard') }}" class="brand">
+            <i class="fas fa-user-shield"></i>
+            <h1>FoodExpress - Admin</h1>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('admin_shopkeepers') }}" class="nav-item"><i class="fas fa-users"></i> Shopkeeper</a>
+            <a href="{{ url_for('admin_shops') }}" class="nav-item"><i class="fas fa-gear"></i> Shops</a>
+            <a href="{{ url_for('admin_logout') }}" class="logout-btn">LOG OUT</a>
+        </div>
+    </nav>
+ 
+    <div class="container">
+        <div class="page-header">
+            <h1>Personnel Directory (Users)</h1>
+            <p>Database of all registered customers and mission participants.</p>
+        </div>
+ 
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Name</th>
+                        <th>Email Archive</th>
+                        <th>Phone Link</th>
+                        <th>Registered</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="user-id">#ID-{{ user.id }}</td>
+                        <td style="font-weight: 800;">{{ user.name }}</td>
+                        <td style="color: var(--text-muted);">{{ user.email }}</td>
+                        <td>{{ user.phone }}</td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ user.created_at[:10] }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_view_user', user_id=user.id) }}" class="action-link">VIEW INTEL</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+ 
+            <footer>
+        <p>© 2026 FoodExpress. System Administration. Power by AZHAR™</p>
+    </footer>
+</body>
+</html>

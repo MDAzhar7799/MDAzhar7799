@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - FoodExpress Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-light: #f3f4f6;
+            --white: #ffffff;
+            --header-gradient: linear-gradient(to right, #1a3a32, #2d6a4f);
+            --text-dark: #111827;
+            --text-muted: #6b7280;
+            --blue: #3b82f6;
+            --green: #10b981;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+ 
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--header-gradient);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .brand i { font-size: 1.4rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%; }
+        .brand h1 { font-size: 1.25rem; font-weight: 700; }
+ 
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-item { color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .nav-item.active { color: white; }
+        @media (max-width: 768px) {
+            .navbar { display: none !important; }
+        }
+        .logout-btn {
+            background: #a7f3d0;
+            color: #ef4444;
+            padding: 10px 22px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        
+        /* ===== FOOTER STYLES ===== */
+        .footer-main {
+            background: #020617;
+            padding: 80px 40px 40px;
+            color: #94a3b8;
+            margin-top: 100px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+        }
+        .footer-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+        .footer-col h4 { color: white; font-weight: 800; margin-bottom: 25px; font-size: 1.1rem; }
+        .footer-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .footer-brand i { 
+            background: #22c55e; 
+            color: white; 
+            width: 50px; 
+            height: 50px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 14px; 
+            font-size: 1.6rem; 
+        }
+        .footer-brand h2 { 
+            color: white; 
+            font-size: 2rem; 
+            font-weight: 900; 
+            letter-spacing: -1.5px;
+            margin: 0;
+        }
+        .footer-desc { line-height: 1.6; font-size: 0.95rem; font-weight: 500; }
+        .footer-links { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 15px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-weight: 500; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .footer-links a:hover { color: #22c55e; padding-left: 5px; }
+        .footer-links i { font-size: 0.7rem; }
+        .contact-item { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+        .contact-item i { color: #22c55e; font-size: 1.1rem; }
+        .contact-text { font-size: 0.9rem; font-weight: 500; line-height: 1.4; margin: 0; }
+        .copyright { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); font-weight: 700; font-size: 0.95rem; color: #ffffff; }
+
+        .copyright span { color: #ef4444; }
+ 
+        /* ===== CONTAINER ===== */
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+ 
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 800; }
+ 
+        /* ===== TODAY'S STATS ===== */
+        .today-banner {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border-left: 6px solid var(--green);
+        }
+        .today-label { font-size: 0.8rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .today-count { font-size: 1.5rem; font-weight: 900; color: var(--text-dark); }
+ 
+        /* ===== DATE GROUP HEADER ===== */
+        .date-separator {
+            padding: 12px 20px;
+            background: #e5e7eb;
+            color: #4b5563;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            margin: 40px 0 15px 0;
+            display: inline-block;
+        }
+ 
+        .card { background: white; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+ 
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 12px 15px; font-size: 0.85rem; font-weight: 900; color: var(--text-dark); border-bottom: 2px solid #f3f4f6; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px 15px; font-size: 0.9rem; border-bottom: 1px solid #f3f4f6; font-weight: 700; }
+ 
+        .mission-id { font-weight: 850; color: var(--blue); }
+        .customer-cel { line-height: 1.4; }
+        .customer-name { font-weight: 850; display: block; font-size: 1.05rem; }
+        .customer-email { font-size: 0.95rem; color: var(--text-dark); display: block; font-weight: 700; }
+        .customer-phone { font-size: 0.9rem; color: var(--text-muted); display: block; font-weight: 700; margin-top: 3px; }
+        .delivery-type { font-size: 0.95rem; font-weight: 800; text-transform: capitalize; }
+ 
+        .status-pill { padding: 6px 14px; border-radius: 100px; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
+        .status-pill.status-placed { background: #eff6ff; color: #1e40af; }
+        .status-pill.status-delivered { background: #f1f5f9; color: #475569; }
+        .status-pill.status-preparing { background: #fffbeb; color: #92400e; }
+        .status-pill.status-ready { background: #ecfdf5; color: #065f46; }
+        .status-pill.status-user-cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .status-pill.status-cancelled { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+ 
+        .amount-tag { font-weight: 850; font-size: 1.05rem; color: #059669; }
+        .view-link { 
+            color: var(--blue); 
+            font-weight: 850; 
+            text-decoration: none; 
+            font-size: 0.75rem; 
+            background: #eff6ff; 
+            padding: 8px 14px; 
+            border-radius: 8px; 
+            transition: 0.3s; 
+            display: inline-block; 
+            white-space: nowrap;
+            text-align: center;
+        }
+        .view-link:hover { background: var(--blue); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+ 
+        footer { background: #020617; padding: 60px 20px; color: #94a3b8; text-align: center; margin-top: 100px; }
+        /* ===== FILTER STYLES ===== */
+        .filter-controls { 
+            background: #0f172a; border: 2px solid #ea580c; padding: 15px 25px;
+            border-radius: 16px; display: flex; gap: 15px; align-items: center; 
+            margin-bottom: 25px; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.1);
+        }
+        .filter-btn {
+            background: transparent; border: none; padding: 10px 24px;
+            border-radius: 12px; font-weight: 800; color: rgba(255,255,255,0.7);
+            cursor: pointer; transition: 0.3s; font-family: 'Outfit'; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .filter-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+        .filter-btn.active { background: #ea580c; color: white; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4); }
+        .filter-label { color: white; font-weight: 800; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; margin-left: auto; }
+        .filter-date {
+            padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); font-family: 'Outfit'; font-weight: 800; color: white;
+            outline: none; transition: 0.3s; cursor: pointer; font-size: 0.95rem;
+        }
+        .filter-date:focus { border-color: #ea580c; background: rgba(255,255,255,0.1); }
+        .filter-date::-webkit-calendar-picker-indicator { filter: invert(1) sepia(1) saturate(5) hue-rotate(350deg); opacity: 0.8; cursor: pointer; }
+
+        /* ===== MOBILE COMPONENTS ===== */
+        .mobile-search-header { display: none; background: #0f1c17; padding: 10px 15px 15px; position: sticky; top: 0; z-index: 1500; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; height: 65px; display: none; align-items: center; justify-content: space-around; z-index: 2000; box-shadow: 0 -2px 15px rgba(0,0,0,0.08); border-top: 1px solid #f1f5f9; }
+        .bottom-nav-inner { display: flex; width: 100%; justify-content: space-around; align-items: center; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #64748b; font-size: 0.7rem; font-weight: 700; gap: 1px; transition: 0.3s; flex: 1; }
+        .bottom-nav-item i { font-size: 1.2rem; transition: 0.3s; }
+        .bottom-nav-item.active { color: #22c55e; }
+        .bottom-nav-item.active i { transform: translateY(-2px); }
+        .mobile-sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100vh; background: #122b27; z-index: 3000; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 40px 25px; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+        .mobile-sidebar.active { left: 0; }
+        .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2999; display: none; }
+        .mobile-overlay.active { display: block; }
+        .sidebar-links { list-style: none; margin-top: 40px; padding: 0; }
+        .sidebar-links li { margin-bottom: 25px; }
+        .sidebar-links a { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 15px; }
+        .sidebar-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .mobile-search-header { display: block !important; }
+            .bottom-nav { display: flex !important; }
+            body { padding-bottom: 0 !important; overflow-x: hidden !important; background-color: #f8fafc !important; }
+
+            .container { margin: 15px auto 0 !important; padding: 0 12px !important; width: 100% !important; box-sizing: border-box !important; }
+            .page-header { flex-direction: column !important; align-items: flex-start !important; text-align: left !important; margin-bottom: 20px !important; gap: 12px !important; }
+            .page-header h1 { font-size: 1.4rem !important; font-weight: 950 !important; letter-spacing: -0.5px !important; }
+            .page-header p { font-size: 0.8rem !important; line-height: 1.4 !important; opacity: 0.8 !important; }
+            
+            /* Fit Header Buttons */
+            .page-header div:last-child { justify-content: flex-start !important; width: 100% !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+            .view-link[style*="background: linear-gradient"] { width: 100% !important; padding: 10px 12px !important; font-size: 0.75rem !important; border-radius: 10px !important; justify-content: center !important; text-align: center !important; }
+
+            /* Fit Stats Banner */
+            .today-banner { flex-direction: column !important; text-align: center !important; gap: 10px !important; padding: 18px !important; border-left: none !important; border-top: 5px solid var(--green) !important; border-radius: 20px !important; background: white !important; box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important; margin-bottom: 20px !important; }
+            .today-banner div:last-child { margin-left: 0 !important; }
+            .today-label { font-size: 0.65rem !important; letter-spacing: 0.5px !important; }
+            .today-count { font-size: 1.2rem !important; margin-top: 2px !important; }
+            .hidden-row { display: none !important; }
+
+            /* Proper Structure for Dark Filter Box */
+            .filter-controls { 
+                background: #0f172a !important; 
+                border: 2.5px solid #ea580c !important; 
+                padding: 18px !important; 
+                border-radius: 22px !important; 
+                flex-direction: column !important; 
+                align-items: stretch !important; 
+                gap: 12px !important; 
+                box-shadow: 0 10px 25px rgba(234, 88, 12, 0.15) !important;
+                margin-bottom: 25px !important;
+            }
+            .filter-label { margin-left: 0 !important; text-align: left !important; font-size: 0.75rem !important; margin-top: 5px !important; color: #94a3b8 !important; font-weight: 800 !important; letter-spacing: 1px !important; }
+            .filter-btn { justify-content: center !important; font-size: 0.85rem !important; padding: 14px !important; border-radius: 12px !important; width: 100% !important; background: rgba(255,255,255,0.05) !important; color: white !important; }
+            .filter-btn.active { background: #ea580c !important; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4) !important; }
+            .filter-date { width: 100% !important; font-size: 0.9rem !important; padding: 14px !important; border-radius: 12px !important; background: rgba(255,255,255,0.05) !important; color: white !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+
+            /* Proper Order Card Structure */
+            .card { background: transparent !important; box-shadow: none !important; border: none !important; }
+            table, thead, tbody, th, td, tr { display: block !important; width: 100% !important; }
+            thead { display: none !important; }
+            tr.order-row { background: white !important; padding: 20px !important; border-radius: 24px !important; margin-bottom: 15px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important; border: 1px solid #f1f5f9 !important; position: relative !important; overflow: hidden !important; }
+            tr.date-sep-row { background: transparent !important; padding: 0 !important; border: none !important; box-shadow: none !important; margin-bottom: 5px !important; }
+            tr.date-sep-row td { text-align: left !important; padding: 0 !important; margin-bottom: 0 !important; }
+            
+            td { padding: 0 !important; border: none !important; text-align: left !important; margin-bottom: 12px !important; }
+            td:last-child { margin-bottom: 0 !important; }
+
+            /* Stack Order ID and Price for Proper Fit */
+            .mission-id { font-size: 0.8rem !important; font-weight: 800 !important; color: #94a3b8 !important; margin-bottom: 12px !important; display: block !important; word-break: break-all !important; padding-right: 70px !important; }
+            .amount-tag { position: absolute !important; top: 18px !important; right: 20px !important; font-size: 1.15rem !important; font-weight: 950 !important; color: #059669 !important; text-align: right !important; }
+            
+            .shop-name-cell { font-size: 1.1rem !important; font-weight: 950 !important; color: #1e293b !important; display: block !important; margin-bottom: 4px !important; letter-spacing: -0.4px !important; }
+            .delivery-type { font-size: 0.85rem !important; font-weight: 800 !important; color: #94a3b8 !important; display: block !important; margin-bottom: 15px !important; text-transform: uppercase !important; }
+            
+            .customer-cel { background: #f8fafc !important; padding: 12px !important; border-radius: 14px !important; margin-bottom: 18px !important; border: 1px solid #f1f5f9 !important; }
+            .customer-name { font-size: 1rem !important; font-weight: 900 !important; color: #1e293b !important; margin-bottom: 3px !important; }
+            .customer-email, .customer-phone { font-size: 0.85rem !important; font-weight: 600 !important; color: #64748b !important; display: block !important; }
+            
+            .status-cell { margin-bottom: 18px !important; }
+            .status-pill { padding: 8px 16px !important; border-radius: 10px !important; font-size: 0.75rem !important; font-weight: 950 !important; }
+            
+            .action-cell { margin-top: 0 !important; }
+            .view-link:not([style*="background"]) { display: flex !important; align-items: center !important; justify-content: center !important; width: 100% !important; padding: 12px !important; border-radius: 12px !important; font-size: 0.85rem !important; font-weight: 950 !important; background: #f1f5f9 !important; color: #1e293b !important; }
+
+            /* Mobile Responsive Footer (2-column premium) */
+            .footer-main { padding: 25px 10px 70px !important; width: 100% !important; overflow: hidden !important; margin-top: 50px !important; }
+            .footer-grid { 
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px 10px !important;
+                text-align: left !important; 
+                padding: 0 8px 20px !important; 
+                margin: 0 !important;
+                width: 100% !important;
+                align-items: start !important;
+            }
+            .footer-col { padding: 0 !important; margin: 0 !important; }
+            .footer-brand { display: flex !important; align-items: center !important; gap: 6px !important; margin-bottom: 6px !important; } 
+            .footer-brand i { width: 26px !important; height: 26px !important; font-size: 0.75rem !important; border-radius: 6px !important; background: #22c55e !important; color: white !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+            .footer-brand h2 { font-size: 0.95rem !important; margin: 0 !important; line-height: 26px !important; color: white !important; font-weight: 900 !important; }
+            .footer-desc { font-size: 0.62rem !important; line-height: 1.35 !important; margin-top: 5px !important; color: rgba(255,255,255,0.5) !important; }
+            
+            .footer-col h4 { font-size: 0.78rem !important; margin-bottom: 6px !important; margin-top: 0 !important; padding-top: 0 !important; white-space: nowrap !important; color: white !important; font-weight: 900 !important; line-height: 26px !important; letter-spacing: 0.2px !important; }
+            
+            .footer-links a, .footer-links li { font-size: 0.63rem !important; gap: 4px !important; padding: 1px 0 !important; color: rgba(255,255,255,0.5) !important; white-space: nowrap !important; overflow: visible !important; justify-content: flex-start !important; }
+            .footer-links li { margin-bottom: 3px !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; }
+            .contact-item { gap: 6px !important; margin-bottom: 3px !important; display: flex !important; align-items: center !important; }
+            .contact-item i { font-size: 0.8rem !important; color: #22c55e !important; }
+            .contact-text { font-size: 0.63rem !important; color: rgba(255,255,255,0.5) !important; margin: 0 !important; }
+            
+            .copyright { padding: 12px 8px !important; border-top: 1px solid rgba(255,255,255,0.05) !important; font-size: 0.7rem !important; color: white !important; font-weight: 700 !important; text-align: center !important; white-space: normal !important; line-height: 1.6 !important; }
+        }
+    </style>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('mobileSidebar').classList.toggle('active');
+            document.getElementById('mobileOverlay').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('mobileSidebar').classList.contains('active') ? 'hidden' : '';
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('admin_dashboard') }}" class="brand">
+            <i class="fas fa-user-shield"></i>
+            <h1>FoodExpress - Admin</h1>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('admin_shopkeepers') }}" class="nav-item"><i class="fas fa-users"></i> Shopkeeper</a>
+            <a href="{{ url_for('admin_shops') }}" class="nav-item"><i class="fas fa-gear"></i> Shops</a>
+            <a href="{{ url_for('admin_logout') }}" class="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </nav>
+
+    <!-- Mobile Header -->
+    <div class="mobile-search-header">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="{{ url_for('admin_dashboard') }}" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(34,197,94,0.3);">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <span style="font-size: 0.95rem; font-weight: 800; letter-spacing: -0.3px; color: white;">FoodExpress - Admin</span>
+            </a>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:1.2rem; padding:0; cursor:pointer;">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay & Sidebar -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="sidebar-close" onclick="toggleSidebar()"><i class="fas fa-times"></i></div>
+        <a href="{{ url_for('admin_dashboard') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white;"><i class="fas fa-satellite-dish"></i></div>
+            <span style="color: white; font-weight: 900; font-size: 1.4rem;">Admin Panel</span>
+        </a>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-house-chimney-window"></i> Admin Home</a></li>
+            <li><a href="{{ url_for('admin_shopkeepers') }}"><i class="fas fa-users"></i> Manage Shopkeepers</a></li>
+            <li><a href="{{ url_for('admin_shops') }}"><i class="fas fa-gear"></i> Manage Shops</a></li>
+            <li><a href="{{ url_for('admin_orders') }}"><i class="fas fa-list-ul" style="color:#22c55e;"></i> All Orders</a></li>
+            <li><hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;"></li>
+            <li><a href="{{ url_for('admin_logout') }}" style="color: #ff4d4d;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="{{ url_for('admin_dashboard') }}" class="bottom-nav-item">
+                <i class="fas fa-house-chimney-window"></i>
+                <span>Admin Home</span>
+            </a>
+            <a href="{{ url_for('admin_shopkeepers') }}" class="bottom-nav-item">
+                <i class="fas fa-users"></i>
+                <span>Merchants</span>
+            </a>
+            <a href="{{ url_for('admin_shops') }}" class="bottom-nav-item">
+                <i class="fas fa-gear"></i>
+                <span>Shops</span>
+            </a>
+            <a href="{{ url_for('admin_orders') }}" class="bottom-nav-item active">
+                <i class="fas fa-list-ul"></i>
+                <span>Orders</span>
+            </a>
+        </div>
+    </div>
+ 
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1>Order History</h1>
+                <p style="margin-top: 8px; color: var(--text-muted); font-weight: 600;">View and manage orders across the entire merchant network.</p>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-end;">
+                {% for s in shops %}
+                <a href="{{ url_for('admin_shop_orders', shop_id=s.id) }}" class="view-link" style="padding: 14px 28px; background: linear-gradient(135deg, #2e1065, #a855f7); color: white; border-radius: 100px; font-size: 0.95rem; text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); transition: 0.3s;">
+                    <i class="fas fa-store" style="font-size: 0.8rem; opacity: 0.8;"></i> {{ s.name }} Orders
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+ 
+        {% set today_data = namespace(today_count=0, latest_date="") %}
+        {% if orders and orders|length > 0 %}
+            {% set first_order = orders[0] %}
+            {% set today_data.latest_date = (first_order.created_at or "")[:10] %}
+            
+            {% for o in orders %}
+                {% if (o.created_at or "")[:10] == today_data.latest_date and o.order_status != 'User Cancelled' %}
+                    {% set today_data.today_count = today_data.today_count + 1 %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+ 
+        <div class="today-banner">
+            <div>
+                <span class="today-label">Today's Orders</span>
+                <div class="today-count">
+                    {{ today_data.today_count }} Orders Today
+                </div>
+            </div>
+            <div style="margin-left: auto;">
+                <span class="today-label">System Status</span>
+                <div style="color: var(--green); font-weight: 800; font-size: 1rem;"><i class="fas fa-check-circle"></i> Operational</div>
+            </div>
+        </div>
+ 
+        <div class="filter-controls">
+            <button onclick="filterOrders('all')" class="filter-btn active" id="btn-all"><i class="fas fa-layer-group"></i> All Orders</button>
+            <button onclick="filterOrders('today')" class="filter-btn" id="btn-today"><i class="fas fa-calendar-check"></i> Today</button>
+            <span class="filter-label">SPECIFIC DATE:</span>
+            <input type="date" id="datePicker" class="filter-date" onchange="filterOrders('date', this.value)">
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer Details</th>
+                        <th>Shop Name</th>
+                        <th>Delivery Type</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set tracker = namespace(current_date="") %}
+                    {% for order in orders %}
+                        {% if order.order_status != 'User Cancelled' %}
+                            {% set order_date = (order.created_at or "")[:10] %}
+                        {% if order_date != tracker.current_date %}
+                            {% set tracker.current_date = order_date %}
+                            <tr class="date-sep-row" data-date="{{ order_date }}">
+                                <td colspan="7">
+                                    <div class="date-separator">
+                                        {% if order_date == today_data.latest_date %}
+                                            <i class="fas fa-bolt"></i> TODAY - {{ order_date }}
+                                        {% else %}
+                                            <i class="fas fa-calendar-day"></i> {{ order_date or 'ARCHIVE' }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                        <tr class="order-row" data-date="{{ order_date }}">
+                            <td class="mission-id">#{{ order.order_number }}</td>
+                            <td class="customer-cel">
+                                <span class="customer-name">{{ order.customer_name }}</span>
+                                <span class="customer-email">{{ order.customer_email }}</span>
+                                <span class="customer-phone">{{ order.customer_phone }}</span>
+                            </td>
+                            <td class="shop-name-cell" style="font-weight: 700;">{{ order.shop_name }}</td>
+                            <td class="delivery-type">{{ order.delivery_type }}</td>
+                            <td class="amount-tag">₹{{ order.total_amount }}</td>
+                            <td class="status-cell">
+                                {% if order.order_status == 'Cancelled' %}
+                                    <span class="status-pill" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; display: inline-flex; flex-direction: column; text-align: left; line-height: 1.4; padding: 8px 14px;">
+                                        <span style="font-weight: 900;">SHOPKEEPER CANCELLED</span>
+                                        {% if order.cancellation_reason %}
+                                            <span style="font-size: 0.75rem; font-weight: 600; text-transform: none; margin-top: 3px; letter-spacing: 0;">Reason: {{ order.cancellation_reason }}</span>
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="status-pill status-{{ (order.order_status or 'pending')|lower|replace(' ', '-') }}">
+                                        {{ order.order_status or 'Pending' }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="action-cell">
+                                <a href="{{ url_for('admin_view_order', order_id=order.id) }}" class="view-link">VIEW DETAILS</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not orders %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-muted);">No orders found.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+ 
+    <footer class="footer-main">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-brand">
+                    <i class="fas fa-utensils"></i>
+                    <h2>FoodExpress</h2>
+                </div>
+                <p class="footer-desc">
+                    Order smart, skip queues, eat better. Built for LPU & LawGate students, staff and everyone on campus who values their time.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="/"><i class="fas fa-chevron-right"></i> Home</a></li>
+                    <li><a href="/shops"><i class="fas fa-chevron-right"></i> All Shops</a></li>
+                    <li><a href="{{ url_for('admin_dashboard') }}#founder"><i class="fas fa-chevron-right"></i> Founder</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul class="footer-links">
+                    <li><a href="/shopkeeper/login"><i class="fas fa-chevron-right"></i> Shopkeeper Login</a></li>
+                    <li><a href="/admin/dashboard"><i class="fas fa-chevron-right"></i> Admin Panel</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <p class="contact-text">mdazhark735@gmail.com</p>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            © 2026 FoodExpress — Made by MD Azhar | Built for everyone, loved by students
+        </div>
+    </footer>
+
+<script>
+    const todayDate = "{{ today_data.latest_date }}";
+    
+    function filterOrders(type, selectedDate = null) {
+        // Reset buttons
+        document.getElementById('btn-all').classList.remove('active');
+        document.getElementById('btn-today').classList.remove('active');
+        
+        let targetDate = "";
+        
+        if (type === 'all') {
+            document.getElementById('btn-all').classList.add('active');
+            document.getElementById('datePicker').value = "";
+        } else if (type === 'today') {
+            document.getElementById('btn-today').classList.add('active');
+            targetDate = todayDate;
+            document.getElementById('datePicker').value = targetDate;
+        } else if (type === 'date') {
+            targetDate = selectedDate;
+            if(targetDate === todayDate) {
+                document.getElementById('btn-today').classList.add('active');
+            }
+        }
+        
+        // Filter rows
+        const rows = document.querySelectorAll('tbody tr[data-date]');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            if (type === 'all') {
+                row.classList.remove('hidden-row');
+                visibleCount++;
+            } else {
+                if (row.getAttribute('data-date') === targetDate) {
+                    row.classList.remove('hidden-row');
+                    visibleCount++;
+                } else {
+                    row.classList.add('hidden-row');
+                }
+            }
+        });
+        
+        // Handle empty state
+        const emptyMsg = document.getElementById('empty-msg-row');
+        if (visibleCount === 0) {
+            if (!emptyMsg) {
+                const tbody = document.querySelector('tbody');
+                const tr = document.createElement('tr');
+                tr.id = 'empty-msg-row';
+                tr.innerHTML = '<td colspan="7" style="text-align: center; padding: 50px; font-weight: 700; color: var(--text-muted);">No orders found for selected filter.</td>';
+                tbody.appendChild(tr);
+            } else {
+                emptyMsg.style.display = '';
+            }
+        } else if (emptyMsg) {
+            emptyMsg.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
