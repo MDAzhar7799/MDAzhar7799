@@ -399,7 +399,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-lab">Date & Time</span>
-                    <span class="info-val" style="font-size: 0.9rem;">{{ (order.created_at or "NO-STAMP")[:16] }}</span>
+                    <span class="info-val" style="font-size: 0.9rem;">{{ order.created_at | dateformat('%Y-%m-%d %H:%M') }}</span>
                 </div>
             </div>
  

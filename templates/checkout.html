@@ -619,6 +619,7 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
+                    localStorage.removeItem('food_cart');
                     window.location.href = data.redirect;
                 } else {
                     alert(data.error || 'The system encountered an error placing your order.');

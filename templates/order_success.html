@@ -546,6 +546,7 @@
         }
 
         function updateNavCartCount() {
+            localStorage.removeItem('food_cart');
             const cartItems = JSON.parse(localStorage.getItem('food_cart') || '[]');
             const count = cartItems.reduce((acc, item) => acc + item.quantity, 0);
             const badge = document.getElementById('cart-count');

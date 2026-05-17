@@ -178,6 +178,31 @@ def add_header(response):
     return response
 
 
+@app.template_filter('dateformat')
+def dateformat_filter(value, fmt='%Y-%m-%d'):
+    """Jinja2 filter: safely format a date/datetime from either PostgreSQL (datetime obj) or SQLite (string).
+    Usage in templates: {{ order.created_at | dateformat }}            → '2026-05-17'
+                        {{ order.created_at | dateformat('%Y-%m-%d %H:%M') }} → '2026-05-17 21:00'
+                        {{ order.created_at | dateformat('%m') }}      → '05'
+    """
+    if value is None:
+        return 'N/A'
+    # PostgreSQL returns a datetime object — use strftime directly
+    if hasattr(value, 'strftime'):
+        return value.strftime(fmt)
+    # SQLite returns a string — slice by format length
+    s = str(value)
+    if fmt == '%Y-%m-%d':
+        return s[:10]
+    if fmt == '%Y-%m-%d %H:%M':
+        return s[:16]
+    if fmt == '%m':
+        return s[5:7]
+    if fmt == '%H:%M':
+        return s[11:16]
+    return s
+
+
 # ============================================
 # PUBLIC ROUTES
 # ============================================

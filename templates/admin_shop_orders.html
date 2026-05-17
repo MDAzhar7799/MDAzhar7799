@@ -432,7 +432,7 @@
                             {% endif %}
                         </td>
                         <td style="color: #059669; font-weight: 950;">₹{{ order.total_amount }}</td>
-                        <td style="font-size: 0.85rem; color: var(--text-muted);">{{ (order.created_at or '')[:16] }}</td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">{{ order.created_at | dateformat('%Y-%m-%d %H:%M') }}</td>
                         <td>
                             <a href="{{ url_for('admin_view_order', order_id=order.id) }}" class="view-link">Details</a>
                         </td>

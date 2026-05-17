@@ -362,7 +362,7 @@
                                 {{ 'Operational' if shop.is_active else 'Deactivated' }}
                             </span>
                         </td>
-                        <td class="date-cell" style="font-size: 0.85rem; color: var(--text-muted);">{{ (shop.created_at or '')[:10] }}</td>
+                        <td class="date-cell" style="font-size: 0.85rem; color: var(--text-muted);">{{ shop.created_at | dateformat }}</td>
                         <td>
                             <form method="POST">
                                 <input type="hidden" name="action" value="toggle_status">

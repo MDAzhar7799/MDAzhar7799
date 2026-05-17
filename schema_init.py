@@ -248,7 +248,7 @@ shopkeepers_to_seed = [
             'email': 'new1234@gmail.com',
             'delivery_available': 1,
             'delivery_charge': 20.0,
-            'is_active': 1,
+            'is_active': 0,
             'logo_path': None,
             'items': [
                 ('coffee', 'Fresh brewed hot coffee', 10.0, 'Drinks', 'uploads/food_images/food_4_20260507_212139_Cortado.png')

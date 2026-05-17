@@ -331,7 +331,7 @@
                             </td>
                             <td class="amount-tag">₹{{ order.total_amount }}</td>
                             <td><span class="status-pill">{{ order.order_status }}</span></td>
-                            <td style="font-size: 1rem; font-weight: 800; color: var(--text-muted);">{{ (order.created_at or '')[:16] }}</td>
+                            <td style="font-size: 1rem; font-weight: 800; color: var(--text-muted);">{{ order.created_at | dateformat('%Y-%m-%d %H:%M') }}</td>
                         </tr>
                         {% endfor %}
                     {% else %}

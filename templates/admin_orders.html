@@ -418,10 +418,10 @@
         {% set today_data = namespace(today_count=0, latest_date="") %}
         {% if orders and orders|length > 0 %}
             {% set first_order = orders[0] %}
-            {% set today_data.latest_date = (first_order.created_at or "")[:10] %}
+            {% set today_data.latest_date = first_order.created_at | dateformat %}
             
             {% for o in orders %}
-                {% if (o.created_at or "")[:10] == today_data.latest_date and o.order_status != 'User Cancelled' %}
+                {% if (o.created_at | dateformat) == today_data.latest_date and o.order_status != 'User Cancelled' %}
                     {% set today_data.today_count = today_data.today_count + 1 %}
                 {% endif %}
             {% endfor %}
@@ -464,7 +464,7 @@
                     {% set tracker = namespace(current_date="") %}
                     {% for order in orders %}
                         {% if order.order_status != 'User Cancelled' %}
-                            {% set order_date = (order.created_at or "")[:10] %}
+                            {% set order_date = order.created_at | dateformat %}
                         {% if order_date != tracker.current_date %}
                             {% set tracker.current_date = order_date %}
                             <tr class="date-sep-row" data-date="{{ order_date }}">

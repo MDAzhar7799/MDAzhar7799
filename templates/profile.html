@@ -485,7 +485,7 @@
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                 <label>Member Since</label>
-                <span>{{ user['created_at'][:10] if user['created_at'] else 'N/A' }}</span>
+                <span>{{ user['created_at'] | dateformat if user['created_at'] else 'N/A' }}</span>
             </div>
         </div>
 
@@ -520,7 +520,7 @@
                             </div>
                             <div class="detail-item">
                                 <i class="fas fa-clock"></i> <span>Timestamp</span>
-                                <strong>{{ order['created_at'][:10] if order['created_at'] else 'N/A' }}</strong>
+                                <strong>{{ order['created_at'] | dateformat if order['created_at'] else 'N/A' }}</strong>
                             </div>
                         </div>
                         <div class="order-actions">

@@ -586,13 +586,13 @@
         <div class="orders-list" id="ordersList">
             {% for order in orders %}
             <div class="order-card" 
-                 data-date="{{ order.created_at[:10] }}" 
-                 data-month="{{ order.created_at[5:7] }}"
+                 data-date="{{ order.created_at | dateformat }}" 
+                 data-month="{{ order.created_at | dateformat('%m') }}"
                  style="animation-delay: {{ loop.index0 * 0.1 }}s;">
                 <div class="order-card-header">
                     <div class="oc-left">
                         <h3>Order #{{ order.order_number }}</h3>
-                        <p><i class="far fa-calendar-alt" aria-hidden="true"></i> {{ order.created_at }}</p>
+                        <p><i class="far fa-calendar-alt" aria-hidden="true"></i> {{ order.created_at | dateformat('%Y-%m-%d %H:%M') }}</p>
                     </div>
                     <div class="order-status status-{{ (order.order_status or 'Pending').lower()|replace(' ', '-') }}">
                         <i class="fas fa-circle" style="font-size: 0.5rem;" aria-hidden="true"></i> 

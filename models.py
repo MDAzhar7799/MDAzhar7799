@@ -32,11 +32,30 @@ class PGCursorWrapper:
         self.lastrowid = None
 
     def execute(self, query, params=None):
-        # Translate sqlite3 query placeholders (?) and date functions to PostgreSQL
+        import re
+        # Translate sqlite3 query placeholders (?) to PostgreSQL
         query_pg = query.replace('?', '%s')
-        query_pg = query_pg.replace("DATE('now')", "CURRENT_DATE")
-        query_pg = query_pg.replace("DATE(created_at)", "created_at::date")
         query_pg = query_pg.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+        
+        # Translate DATE(...) dynamically to PostgreSQL compatibility
+        def replace_date(match):
+            val = match.group(1).strip()
+            if val.lower() in ["'now'", '"now"']:
+                return "CURRENT_DATE"
+            return f"({val})::date"
+            
+        query_pg = re.sub(r"\bDATE\(\s*([^)]+)\)", replace_date, query_pg)
+        
+        # Translate strftime(...) dynamically to PostgreSQL to_char
+        def replace_strftime(match):
+            fmt = match.group(1)
+            val = match.group(2).strip()
+            pg_fmt = fmt.replace('%Y', 'YYYY').replace('%m', 'MM').replace('%d', 'DD')
+            if val.lower() in ["'now'", '"now"']:
+                val = "CURRENT_TIMESTAMP"
+            return f"to_char({val}, '{pg_fmt}')"
+
+        query_pg = re.sub(r"strftime\(\s*['\"]([^'\"]+)['\"]\s*,\s*([^)]+)\)", replace_strftime, query_pg)
         
         is_insert = query_pg.strip().upper().startswith('INSERT')
         
@@ -631,7 +650,6 @@ class Order:
                    FROM order_status_history
                ) h ON o.id = h.order_id AND h.rn = 1
                WHERE o.shop_id = ? 
-               AND (h.updated_by IS NULL OR h.updated_by != 'Customer')
                ORDER BY o.created_at DESC""",
             (shop_id,)
         ).fetchall()

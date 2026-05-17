@@ -112,7 +112,7 @@
                 <div class="data-row"><span class="data-lab">Identifier</span><span class="data-val">{{ shopkeeper.username }}</span></div>
                 <div class="data-row"><span class="data-lab">Secure Email</span><span class="data-val">{{ shopkeeper.email }}</span></div>
                 <div class="data-row"><span class="data-lab">Protocol Phone</span><span class="data-val">{{ shopkeeper.phone }}</span></div>
-                <div class="data-row"><span class="data-lab">Creation Hash</span><span class="data-val">{{ shopkeeper.created_at[:16] }}</span></div>
+                <div class="data-row"><span class="data-lab">Creation Hash</span><span class="data-val">{{ shopkeeper.created_at | dateformat('%Y-%m-%d %H:%M') }}</span></div>
             </div>
  
             <div class="sub-card">
