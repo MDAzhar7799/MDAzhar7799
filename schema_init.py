@@ -1,8 +1,9 @@
 import os
 from models import get_db_connection
 
-# Ensure instance directory exists
-os.makedirs("instance", exist_ok=True)
+# Ensure instance directory exists (bypass on Vercel read-only system)
+if not os.environ.get('VERCEL'):
+    os.makedirs("instance", exist_ok=True)
 
 conn = get_db_connection()
 cursor = conn.cursor()

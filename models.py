@@ -8,7 +8,10 @@ import string
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-DATABASE = "instance/lpu.db"
+if os.environ.get('VERCEL'):
+    DATABASE = "/tmp/lpu.db"
+else:
+    DATABASE = "instance/lpu.db"
 
 # Dynamic psycopg2 import for PostgreSQL support
 DATABASE_URL = os.environ.get('DATABASE_URL')
