@@ -598,16 +598,15 @@ def shopkeeper_menu():
                 flash('Invalid price', 'error')
                 return redirect(request.url)
             
-            # Handle image upload
+            # Handle image upload to work on Vercel (base64)
             image_path = None
             if 'image' in request.files:
                 file = request.files['image']
                 if file.filename != '' and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    filename = f"food_{shop['id']}_{timestamp}_{secure_filename(file.filename)}"
-                    filepath = os.path.join(FOOD_IMAGE_FOLDER, filename)
-                    file.save(filepath)
-                    image_path = f"uploads/food_images/{filename}"
+                    import base64
+                    encoded_string = base64.b64encode(file.read()).decode('utf-8')
+                    mime_type = file.mimetype if file.mimetype else 'image/jpeg'
+                    image_path = f"data:{mime_type};base64,{encoded_string}"
             
             FoodItem.create(shop['id'], name, price, description, category, image_path)
             flash('Food item added successfully!', 'success')
@@ -638,11 +637,10 @@ def shopkeeper_menu():
             if 'image' in request.files:
                 file = request.files['image']
                 if file.filename != '' and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    filename = f"food_{shop['id']}_{timestamp}_{secure_filename(file.filename)}"
-                    filepath = os.path.join(FOOD_IMAGE_FOLDER, filename)
-                    file.save(filepath)
-                    update_data['image_path'] = f"uploads/food_images/{filename}"
+                    import base64
+                    encoded_string = base64.b64encode(file.read()).decode('utf-8')
+                    mime_type = file.mimetype if file.mimetype else 'image/jpeg'
+                    update_data['image_path'] = f"data:{mime_type};base64,{encoded_string}"
             
             FoodItem.update(item_id, **update_data)
             flash('Food item updated successfully!', 'success')

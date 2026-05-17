@@ -375,7 +375,11 @@
                 </div>
                 <div class="card-img-box">
                     {% if item.image_path %}
-                        <img src="/static/{{ item.image_path }}" class="card-img" alt="{{ item.name }}">
+                        {% if item.image_path.startswith('data:') %}
+                            <img src="{{ item.image_path }}" class="card-img" alt="{{ item.name }}">
+                        {% else %}
+                            <img src="/static/{{ item.image_path }}" class="card-img" alt="{{ item.name }}">
+                        {% endif %}
                     {% else %}
                         <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#cbd5e1; font-size:4rem;">
                             <i class="fas fa-image"></i>
@@ -616,7 +620,11 @@
 
                 const preview = document.getElementById('edit-preview');
                 if (image && image !== "") {
-                    preview.src = "/static/" + image;
+                    if (image.startsWith('data:')) {
+                        preview.src = image;
+                    } else {
+                        preview.src = "/static/" + image;
+                    }
                 } else {
                     preview.src = "https://via.placeholder.com/150?text=No+Dish+Image";
                 }
