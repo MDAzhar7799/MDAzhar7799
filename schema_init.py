@@ -156,25 +156,39 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 
 conn.commit()
 
-# Insert default admin if not exists
-cursor.execute("SELECT id FROM admin WHERE username = 'admin'")
-if not cursor.fetchone():
-    from werkzeug.security import generate_password_hash
-    admin_password = generate_password_hash('admin123')
-    cursor.execute("""
-        INSERT INTO admin (username, password, email) 
-        VALUES (?, ?, ?)
-    """, ('admin', admin_password, 'mdazhark735@gmail.com'))
-    conn.commit()
-    print("Default admin created: username='admin', password='admin123', email='mdazhark735@gmail.com'")
+# Insert or update default admins to match local database passwords exactly
+admins_to_seed = [
+    {
+        'username': 'Azhar',
+        'password_hash': 'pbkdf2:sha256:600000$o5kU3VOpSS0jenON$0daaea727e3459eaab41570b6ebe553eb38416fa7caea0d53084ca593fbf1fd5',
+        'email': 'mdazhark735@gmail.com'
+    },
+    {
+        'username': 'admin',
+        'password_hash': 'pbkdf2:sha256:600000$4JJsbQJLNKBauQwS$140ac9b4295b6cfa792aed64f9e0e98a709c16db05b3ec540016b0caa6beb0c6',
+        'email': 'mdazhark735@gmail.com'
+    }
+]
 
-# Insert default shopkeepers and shops if they don't exist
-from werkzeug.security import generate_password_hash
+for adm in admins_to_seed:
+    cursor.execute("SELECT id FROM admin WHERE username = ?", (adm['username'],))
+    row = cursor.fetchone()
+    if not row:
+        cursor.execute("""
+            INSERT INTO admin (username, password, email) 
+            VALUES (?, ?, ?)
+        """, (adm['username'], adm['password_hash'], adm['email']))
+        print(f"Seeded admin: {adm['username']}")
+    else:
+        cursor.execute("UPDATE admin SET password = ?, email = ? WHERE username = ?", (adm['password_hash'], adm['email'], adm['username']))
+        print(f"Updated admin password/email: {adm['username']}")
+conn.commit()
 
+# Insert or update default shopkeepers and shops to match local database passwords exactly
 shopkeepers_to_seed = [
     {
         'username': 'demo_shop',
-        'password': 'shop123',
+        'password_hash': 'pbkdf2:sha256:600000$y0PoHXcEaSrL4t0n$671c6b9f70720b6cc3e7c18795a4d17b2f4236d46e81ff209d1e6c8a8fce029c',
         'email': 'shop@lpufood.com',
         'phone': '9876543210',
         'shop': {
@@ -199,7 +213,7 @@ shopkeepers_to_seed = [
     },
     {
         'username': 'lawget',
-        'password': 'lawget123',
+        'password_hash': 'pbkdf2:sha256:600000$uh3WZsdyPKkrTVNG$616e9d6b35d0f401c45d3a33918d5226a3c74f9b530c0fcf0903ce22e7324c86',
         'email': 'lawget7799@gmail.com',
         'phone': '1234567891',
         'shop': {
@@ -223,7 +237,7 @@ shopkeepers_to_seed = [
     },
     {
         'username': 'new',
-        'password': 'new123',
+        'password_hash': 'pbkdf2:sha256:600000$ABHyLRuQI12LR3ic$d73fa33ef7c993adf17d49a20bfb2a571e0925448f5e55351b87f7d70ca10eeb',
         'email': 'new1234@gmail.com',
         'phone': '9988776655',
         'shop': {
@@ -234,7 +248,7 @@ shopkeepers_to_seed = [
             'email': 'new1234@gmail.com',
             'delivery_available': 1,
             'delivery_charge': 20.0,
-            'is_active': 1,  # Set active so it shows up for testing
+            'is_active': 1,
             'logo_path': None,
             'items': [
                 ('coffee', 'Fresh brewed hot coffee', 10.0, 'Drinks', 'uploads/food_images/food_4_20260507_212139_Cortado.png')
@@ -245,12 +259,12 @@ shopkeepers_to_seed = [
 
 for sk in shopkeepers_to_seed:
     cursor.execute("SELECT id FROM shopkeepers WHERE username = ?", (sk['username'],))
-    if not cursor.fetchone():
-        hashed_pw = generate_password_hash(sk['password'])
+    row = cursor.fetchone()
+    if not row:
         cursor.execute("""
             INSERT INTO shopkeepers (username, password, email, phone) 
             VALUES (?, ?, ?, ?)
-        """, (sk['username'], hashed_pw, sk['email'], sk['phone']))
+        """, (sk['username'], sk['password_hash'], sk['email'], sk['phone']))
         shopkeeper_id = cursor.lastrowid
         
         # Create shop
@@ -282,6 +296,10 @@ for sk in shopkeepers_to_seed:
             """, (shop_id, name, desc, price, cat, img))
             
         print(f"Seeded shopkeeper: {sk['username']} with shop: {shop['name']}")
+    else:
+        # Update shopkeeper password dynamically to match local db password hash
+        cursor.execute("UPDATE shopkeepers SET password = ?, email = ?, phone = ? WHERE username = ?", (sk['password_hash'], sk['email'], sk['phone'], sk['username']))
+        print(f"Updated shopkeeper password: {sk['username']}")
 
 conn.commit()
 conn.close()
