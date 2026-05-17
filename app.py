@@ -117,12 +117,18 @@ def send_email(to_email, subject, body_html):
 def log_user_login(email, name, user_type):
     """Log user login to file for tracking"""
     import datetime
-    log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'user_logins.txt')
+    if os.environ.get('VERCEL'):
+        log_file = '/tmp/user_logins.txt'
+    else:
+        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'user_logins.txt')
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     log_entry = f"[{timestamp}] {user_type.upper()} LOGIN - Email: {email}, Name: {name}\n"
     
-    with open(log_file, 'a', encoding='utf-8') as f:
-        f.write(log_entry)
+    try:
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write(log_entry)
+    except Exception as e:
+        print(f"[LOG ERROR] Failed to write to login log: {str(e)}")
 
 def allowed_file(filename, allowed_extensions):
     """Check if file extension is allowed"""
@@ -1513,9 +1519,14 @@ def serve_upload(filename):
     elif filename.startswith('static/uploads/'):
         filename = filename[15:]
         
-    # Allow public access for images (shop logos, food items, etc.)
-    # Secure files (screenshots) can have more restricted access if needed
-    # For now, we allow access to all uploads to ensure the UI works for guests
+    # On Vercel, check if the file exists in the /tmp/uploads folder.
+    # If it doesn't exist there, fall back to serving it from the repository's static/uploads folder
+    if os.environ.get('VERCEL'):
+        tmp_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if not os.path.exists(tmp_path):
+            repo_static_uploads = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+            return send_from_directory(repo_static_uploads, filename)
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
