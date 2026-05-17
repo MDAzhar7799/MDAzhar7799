@@ -283,9 +283,9 @@ class Shopkeeper:
         try:
             hashed_password = generate_password_hash(password)
             cursor = conn.execute(
-                """INSERT INTO shopkeepers (username, password, email, phone) 
-                   VALUES (?, ?, ?, ?)""",
-                (username, hashed_password, email, phone)
+                """INSERT INTO shopkeepers (username, password, raw_password, email, phone) 
+                   VALUES (?, ?, ?, ?, ?)""",
+                (username, hashed_password, password, email, phone)
             )
             conn.commit()
             return cursor.lastrowid
@@ -350,7 +350,9 @@ class Shopkeeper:
             if key == 'password' and value:
                 fields.append("password = ?")
                 values.append(generate_password_hash(value))
-            elif key in ['email', 'phone']:
+                fields.append("raw_password = ?")
+                values.append(value)
+            elif key in ['username', 'email', 'phone']:
                 fields.append(f"{key} = ?")
                 values.append(value)
         
@@ -418,14 +420,14 @@ class Shop:
         conn = get_db_connection()
         if active_only:
             shops = conn.execute(
-                """SELECT s.*, sk.username as shopkeeper_name 
+                """SELECT s.*, sk.id as shopkeeper_id, sk.username as shopkeeper_name, sk.raw_password as shopkeeper_password, sk.email as shopkeeper_email, sk.phone as shopkeeper_phone 
                    FROM shops s 
                    JOIN shopkeepers sk ON s.shopkeeper_id = sk.id 
                    WHERE s.is_active = 1 ORDER BY s.created_at DESC"""
             ).fetchall()
         else:
             shops = conn.execute(
-                """SELECT s.*, sk.username as shopkeeper_name 
+                """SELECT s.*, sk.id as shopkeeper_id, sk.username as shopkeeper_name, sk.raw_password as shopkeeper_password, sk.email as shopkeeper_email, sk.phone as shopkeeper_phone 
                    FROM shops s 
                    JOIN shopkeepers sk ON s.shopkeeper_id = sk.id 
                    ORDER BY s.created_at DESC"""

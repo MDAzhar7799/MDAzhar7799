@@ -1137,6 +1137,21 @@ def admin_shops():
         elif action == 'delete':
             Shop.delete(shop_id)
             flash('Shop permanently removed from active list', 'success')
+        elif action == 'edit_shopkeeper':
+            shopkeeper_id = request.form.get('shopkeeper_id')
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '').strip()
+            
+            update_data = {}
+            if username: update_data['username'] = username
+            if password: update_data['password'] = password
+            
+            if update_data and shopkeeper_id:
+                try:
+                    Shopkeeper.update(shopkeeper_id, **update_data)
+                    flash('Shopkeeper credentials updated successfully!', 'success')
+                except Exception as e:
+                    flash('Error updating credentials (username might be taken)', 'error')
     
     shops = Shop.get_all(active_only=False)
     return render_template("admin_shops.html", shops=shops)
