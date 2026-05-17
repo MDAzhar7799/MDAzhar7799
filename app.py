@@ -29,6 +29,9 @@ from models import (
 # Initialize Flask app
 app = Flask(__name__)
 
+# Initialize database schema globally (required for Serverless environments like Vercel)
+import schema_init
+
 # ─── PRODUCTION-GRADE CONFIG ─────────────────────────────────
 # Stable secret key from env (fallback for dev only)
 app.secret_key = os.environ.get('SECRET_KEY', 'Azhar-FoodExpress-SuperSecret-2026-LPU-LawGate-xK9mP2qR')
