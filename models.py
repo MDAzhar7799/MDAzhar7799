@@ -17,10 +17,12 @@ else:
 DATABASE_URL = os.environ.get('DATABASE_URL')
 psycopg2 = None
 DictCursor = None
+pg_pool = None
 if DATABASE_URL:
     try:
         import psycopg2
         from psycopg2.extras import DictCursor
+        from psycopg2 import pool
     except ImportError:
         pass
 
@@ -96,8 +98,9 @@ class PGCursorWrapper:
 
 class PGConnectionWrapper:
     """Wrapper to make PostgreSQL connections behave exactly like sqlite3 Row-based connections"""
-    def __init__(self, pg_conn):
+    def __init__(self, pg_conn, pool_ref=None):
         self.pg_conn = pg_conn
+        self.pool_ref = pool_ref
 
     def cursor(self):
         cursor = self.pg_conn.cursor(cursor_factory=DictCursor)
@@ -115,11 +118,17 @@ class PGConnectionWrapper:
         self.pg_conn.rollback()
 
     def close(self):
-        self.pg_conn.close()
+        if self.pool_ref:
+            try:
+                self.pool_ref.putconn(self.pg_conn)
+            except Exception:
+                self.pg_conn.close()
+        else:
+            self.pg_conn.close()
 
 
 def get_db_connection():
-    """Get database connection - dynamically supports SQLite locally and PostgreSQL in production"""
+    """Get database connection - dynamically supports SQLite locally and pooled PostgreSQL in production"""
     db_url = os.environ.get('DATABASE_URL')
     
     if db_url and (db_url.startswith('postgres://') or db_url.startswith('postgresql://')):
@@ -127,10 +136,12 @@ def get_db_connection():
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
             
         if psycopg2:
-            conn = psycopg2.connect(db_url)
-            return PGConnectionWrapper(conn)
+            global pg_pool
+            if not pg_pool:
+                pg_pool = pool.SimpleConnectionPool(1, 20, db_url)
+            conn = pg_pool.getconn()
+            return PGConnectionWrapper(conn, pg_pool)
         else:
-            # If psycopg2 is missing, import fallback or fail gracefully
             raise RuntimeError("psycopg2 package is missing but DATABASE_URL is set! Please install psycopg2-binary.")
             
     conn = sqlite3.connect(DATABASE, timeout=20, check_same_thread=False)

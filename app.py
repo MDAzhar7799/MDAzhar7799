@@ -1431,24 +1431,36 @@ def track_order(order_number):
 def my_orders():
     """User's order history"""
     orders_raw = Order.get_by_user(session['user_id'])
+    if not orders_raw:
+        return render_template("my_orders.html", orders=[])
+        
+    orders = [dict(o) for o in orders_raw]
+    order_ids = [o['id'] for o in orders]
+    placeholders = ', '.join(['?'] * len(order_ids))
     
-    orders = []
     conn = get_db_connection()
-    for o in orders_raw:
-        order_dict = dict(o)
-        items = conn.execute(
-            """SELECT oi.id as oi_id, oi.order_id, oi.food_item_id, 
-                      oi.item_name, oi.quantity, oi.price,
-                      fi.image_path, fi.category 
-               FROM order_items oi 
-               LEFT JOIN food_items fi ON oi.food_item_id = fi.id 
-               WHERE oi.order_id = ?""",
-            (order_dict['id'],)
-        ).fetchall()
-        order_dict['order_items'] = [dict(item) for item in items]
-        orders.append(order_dict)
+    items_raw = conn.execute(
+        f"""SELECT oi.id as oi_id, oi.order_id, oi.food_item_id, 
+                  oi.item_name, oi.quantity, oi.price,
+                  fi.image_path, fi.category 
+           FROM order_items oi 
+           LEFT JOIN food_items fi ON oi.food_item_id = fi.id 
+           WHERE oi.order_id IN ({placeholders})""",
+        tuple(order_ids)
+    ).fetchall()
     conn.close()
     
+    items_by_order = {}
+    for item in items_raw:
+        item_dict = dict(item)
+        oid = item_dict['order_id']
+        if oid not in items_by_order:
+            items_by_order[oid] = []
+        items_by_order[oid].append(item_dict)
+        
+    for o in orders:
+        o['order_items'] = items_by_order.get(o['id'], [])
+        
     return render_template("my_orders.html", orders=orders)
 
 
