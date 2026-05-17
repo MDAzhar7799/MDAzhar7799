@@ -168,44 +168,123 @@ if not cursor.fetchone():
     conn.commit()
     print("Default admin created: username='admin', password='admin123', email='mdazhark735@gmail.com'")
 
-# Insert default shopkeeper and shop if not exists
-cursor.execute("SELECT id FROM shopkeepers WHERE username = 'demo_shop'")
-if not cursor.fetchone():
-    from werkzeug.security import generate_password_hash
-    shopkeeper_password = generate_password_hash('shop123')
-    cursor.execute("""
-        INSERT INTO shopkeepers (username, password, email, phone) 
-        VALUES (?, ?, ?, ?)
-    """, ('demo_shop', shopkeeper_password, 'shop@lpufood.com', '9876543210'))
-    shopkeeper_id = cursor.lastrowid
-    
-    # Create shop for this shopkeeper
-    cursor.execute("""
-        INSERT INTO shops (shopkeeper_id, name, description, location, phone, email, delivery_available, delivery_charge) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (shopkeeper_id, 'LPU Mess A', 'Best food in LPU campus', 'Block 32, Near Academic Block', '9876543210', 'shop@lpufood.com', 1, 20))
-    shop_id = cursor.lastrowid
-    
-    # Add sample food items
-    sample_items = [
-        ('Paneer Butter Masala', 'Creamy paneer curry with rich tomato gravy', 120, 'North Indian'),
-        ('Veg Biryani', 'Aromatic rice with mixed vegetables', 100, 'Rice'),
-        ('Chole Bhature', 'Spicy chickpeas with fried bread', 80, 'North Indian'),
-        ('Masala Dosa', 'Crispy rice crepe with potato filling', 90, 'South Indian'),
-        ('Cold Coffee', 'Refreshing cold coffee with ice cream', 60, 'Beverages'),
-    ]
-    
-    for name, desc, price, category in sample_items:
-        cursor.execute("""
-            INSERT INTO food_items (shop_id, name, description, price, category) 
-            VALUES (?, ?, ?, ?, ?)
-        """, (shop_id, name, desc, price, category))
-    
-    conn.commit()
-    print("Default shopkeeper created: username='demo_shop', password='shop123'")
-    print("Default shop created: LPU Mess A with 5 menu items")
+# Insert default shopkeepers and shops if they don't exist
+from werkzeug.security import generate_password_hash
 
+shopkeepers_to_seed = [
+    {
+        'username': 'demo_shop',
+        'password': 'shop123',
+        'email': 'shop@lpufood.com',
+        'phone': '9876543210',
+        'shop': {
+            'name': 'LPU Block 27',
+            'description': 'Best food in LPU campus',
+            'location': 'LPU 27',
+            'phone': '9876543210',
+            'email': 'shop@lpufood.com',
+            'delivery_available': 1,
+            'delivery_charge': 20.0,
+            'is_active': 1,
+            'logo_path': 'uploads/lpu_mess_logo.png',
+            'items': [
+                ('Paneer Butter Masala', 'Creamy paneer curry with rich tomato gravy', 120.0, 'North Indian', None),
+                ('Veg Biryani', 'Aromatic rice with mixed vegetables', 100.0, 'Rice', None),
+                ('Chole Bhature', 'Spicy chickpeas with fried bread', 80.0, 'North Indian', None),
+                ('Masala Dosa', 'Crispy rice crepe with potato filling', 90.0, 'South Indian', None),
+                ('Cold Coffee', 'Refreshing cold coffee with ice cream', 60.0, 'Beverages', 'uploads/food_images/food_1_20260427_214413_Affogato.png'),
+                ('Dam Biryani', 'kashmir', 100.0, 'special', 'uploads/food_images/food_1_20260309_000156_dosa.png')
+            ]
+        }
+    },
+    {
+        'username': 'lawget',
+        'password': 'lawget123',
+        'email': 'lawget7799@gmail.com',
+        'phone': '1234567891',
+        'shop': {
+            'name': 'Lawget-Pizza',
+            'description': 'Delicious pizzas, garlic bread, and classic Italian sides at LawGate',
+            'location': 'Classic',
+            'phone': '1234567891',
+            'email': 'lawget7799@gmail.com',
+            'upi_id': 'mdazhar7799',
+            'qr_code_path': 'uploads/qr_codes/shop_3_20260503_185053_50_day_leetcode.png',
+            'delivery_available': 1,
+            'delivery_charge': 20.0,
+            'is_active': 1,
+            'logo_path': 'uploads/lawgate_shop_logo.png',
+            'items': [
+                ('Dam Biryani', 'kashmir', 150.0, 'North', 'uploads/food_images/food_3_20260308_232352_butter_paneer_masala.png'),
+                ('Gulab jamun', 'kashmir', 10.0, 'special', 'uploads/food_images/food_3_20260404_184039_Screenshot_2026-04-04_184008.png'),
+                ('Coffee', 'Special Drinks', 10.0, 'Drinks', 'uploads/food_images/food_3_20260516_212037_17789465931747103525050938417352.jpg')
+            ]
+        }
+    },
+    {
+        'username': 'new',
+        'password': 'new123',
+        'email': 'new1234@gmail.com',
+        'phone': '9988776655',
+        'shop': {
+            'name': 'green',
+            'description': 'Fresh salads, green bowls, and organic juices',
+            'location': 'pizza',
+            'phone': '9988776655',
+            'email': 'new1234@gmail.com',
+            'delivery_available': 1,
+            'delivery_charge': 20.0,
+            'is_active': 1,  # Set active so it shows up for testing
+            'logo_path': None,
+            'items': [
+                ('coffee', 'Fresh brewed hot coffee', 10.0, 'Drinks', 'uploads/food_images/food_4_20260507_212139_Cortado.png')
+            ]
+        }
+    }
+]
+
+for sk in shopkeepers_to_seed:
+    cursor.execute("SELECT id FROM shopkeepers WHERE username = ?", (sk['username'],))
+    if not cursor.fetchone():
+        hashed_pw = generate_password_hash(sk['password'])
+        cursor.execute("""
+            INSERT INTO shopkeepers (username, password, email, phone) 
+            VALUES (?, ?, ?, ?)
+        """, (sk['username'], hashed_pw, sk['email'], sk['phone']))
+        shopkeeper_id = cursor.lastrowid
+        
+        # Create shop
+        shop = sk['shop']
+        cursor.execute("""
+            INSERT INTO shops (shopkeeper_id, name, description, location, phone, email, upi_id, qr_code_path, delivery_available, delivery_charge, is_active, logo_path) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            shopkeeper_id, 
+            shop['name'], 
+            shop['description'], 
+            shop['location'], 
+            shop['phone'], 
+            shop['email'], 
+            shop.get('upi_id'), 
+            shop.get('qr_code_path'), 
+            shop['delivery_available'], 
+            shop['delivery_charge'], 
+            shop['is_active'], 
+            shop['logo_path']
+        ))
+        shop_id = cursor.lastrowid
+        
+        # Add food items
+        for name, desc, price, cat, img in shop['items']:
+            cursor.execute("""
+                INSERT INTO food_items (shop_id, name, description, price, category, image_path) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (shop_id, name, desc, price, cat, img))
+            
+        print(f"Seeded shopkeeper: {sk['username']} with shop: {shop['name']}")
+
+conn.commit()
 conn.close()
 
-print("Database tables created successfully")
-print("Tables created: users, admin, shopkeepers, shops, food_items, orders, order_items, order_status_history")
+print("Database tables created and fully seeded successfully")
+print("Tables populated: users, admin, shopkeepers, shops, food_items")
