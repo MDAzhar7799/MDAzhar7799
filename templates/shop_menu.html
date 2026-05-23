@@ -740,11 +740,7 @@
                         <div class="rating-food">{{ range(4, 5)|random }}.{{ range(1, 9)|random }} ★</div>
                         <div class="food-img">
                             {% if item.image_path %}
-                                {% if item.image_path.startswith('data:') %}
-                                    <img src="{{ item.image_path }}" alt="{{ item.name }}">
-                                {% else %}
-                                    <img src="/static/{{ item.image_path }}" alt="{{ item.name }}">
-                                {% endif %}
+                                <img src="{{ item.image_path | img_url }}" alt="{{ item.name }}">
                             {% else %}
                                 <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;color:#e2e8f0;background:#f8fafc;"><i class="fas fa-plate-wheat"></i></div>
                             {% endif %}

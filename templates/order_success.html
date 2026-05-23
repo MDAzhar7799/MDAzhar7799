@@ -445,7 +445,7 @@
                     {% for item in order_items %}
                     <div class="item-row">
                         {% if item.image_path %}
-                            <img src="/{{ item.image_path }}" class="item-img" alt="{{ item.item_name }}">
+                            <img src="{{ item.image_path | img_url }}" class="item-img" alt="{{ item.item_name }}">
                         {% else %}
                             <div class="item-img" style="display: flex; align-items: center; justify-content: center;"><i class="fas fa-hamburger" style="font-size: 1.5rem; color: #cbd5e1;"></i></div>
                         {% endif %}

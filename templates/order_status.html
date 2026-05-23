@@ -629,7 +629,7 @@
                 <div class="prod-badge">
                     <div class="prod-img">
                         {% if item.image_path %}
-                        <img src="/{{ item.image_path }}" alt="{{ item.item_name }}">
+                        <img src="{{ item.image_path | img_url }}" alt="{{ item.item_name }}">
                         {% else %}
                         <div style="font-size: 2rem; color: #cbd5e1;"><i class="fas fa-utensils"></i></div>
                         {% endif %}

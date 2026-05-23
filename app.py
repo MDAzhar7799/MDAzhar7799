@@ -17,6 +17,21 @@ try:
 except ImportError:
     pass  # python-dotenv optional; use OS env vars directly in production
 
+import cloudinary
+import cloudinary.uploader
+
+# Cloudinary CDN Configuration with dynamic environment variable checking
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+if CLOUDINARY_URL:
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+else:
+    cloudinary.config(
+        cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.environ.get('CLOUDINARY_API_KEY'),
+        api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
+        secure=True
+    )
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -201,6 +216,82 @@ def dateformat_filter(value, fmt='%Y-%m-%d'):
     if fmt == '%H:%M':
         return s[11:16]
     return s
+
+
+@app.template_filter('img_url')
+def img_url_filter(value):
+    """Jinja2 filter to safely render absolute Cloudinary URLs, Base64 data, or local disk fallback paths."""
+    if not value:
+        return ''
+    if value.startswith('http://') or value.startswith('https://') or value.startswith('data:'):
+        return value
+    if value.startswith('/'):
+        return value
+    return '/' + value
+
+
+@app.context_processor
+def override_url_for():
+    """Context processor to intercept static/serve_upload url_for calls and return absolute Cloudinary URLs directly."""
+    original_url_for = url_for
+    def custom_url_for(endpoint, **values):
+        if endpoint in ['static', 'serve_upload'] and 'filename' in values:
+            filename = values['filename']
+            if filename and (filename.startswith('http://') or filename.startswith('https://') or filename.startswith('data:')):
+                return filename
+        return original_url_for(endpoint, **values)
+    return dict(url_for=custom_url_for)
+
+
+def upload_image_to_cloud_or_disk(file, folder):
+    """
+    Uploads a file to Cloudinary if it is configured.
+    Otherwise, saves it locally and returns the local relative path for backwards compatibility.
+    """
+    # Check if Cloudinary is configured
+    config = cloudinary.config()
+    if config.cloud_name and config.api_key and config.api_secret:
+        try:
+            # Upload to Cloudinary under the folder foodexpress/<subfolder>
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder=f"foodexpress/{folder}"
+            )
+            secure_url = upload_result.get('secure_url')
+            if secure_url:
+                print(f"[CLOUDINARY SUCCESS] Uploaded to {secure_url}")
+                return secure_url
+        except Exception as e:
+            print(f"[CLOUDINARY ERROR] Upload failed, falling back to local storage: {str(e)}")
+            
+    # Local disk fallback
+    import datetime
+    from werkzeug.utils import secure_filename
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{folder}_{timestamp}_{secure_filename(file.filename)}"
+    
+    if folder == 'qr_codes':
+        target_dir = QR_CODE_FOLDER
+        db_path = f"uploads/qr_codes/{filename}"
+    elif folder == 'payment_screenshots':
+        target_dir = PAYMENT_FOLDER
+        db_path = f"uploads/payment_screenshots/{filename}"
+    elif folder == 'food_images':
+        target_dir = FOOD_IMAGE_FOLDER
+        db_path = f"uploads/food_images/{filename}"
+    elif folder == 'shop_logos':
+        target_dir = SHOP_LOGO_FOLDER
+        db_path = f"static/uploads/shop_logos/{filename}"
+    else:
+        target_dir = UPLOAD_FOLDER
+        db_path = f"uploads/{filename}"
+        
+    os.makedirs(target_dir, exist_ok=True)
+    file_path = os.path.join(target_dir, filename)
+    file.save(file_path)
+    print(f"[LOCAL UPLOAD] Saved locally to {db_path}")
+    return db_path
+
 
 
 # ============================================
@@ -428,11 +519,7 @@ def shopkeeper_profile():
         if 'logo' in request.files:
             file = request.files['logo']
             if file.filename != '' and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"shop_logo_{shop['id']}_{timestamp}_{secure_filename(file.filename)}"
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(filepath)
-                logo_path = os.path.join('uploads', filename)
+                logo_path = upload_image_to_cloud_or_disk(file, 'shop_logos')
                 Shop.update(shop['id'], logo_path=logo_path)
                 flash('Shop logo updated successfully!', 'success')
                 return redirect(url_for('shopkeeper_profile'))
@@ -499,11 +586,7 @@ def shopkeeper_qr_code():
         # Case 1: A new QR image was uploaded
         if file and file.filename != '':
             if allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"shop_{shop['id']}_{timestamp}_{secure_filename(file.filename)}"
-                filepath = os.path.join(QR_CODE_FOLDER, filename)
-                file.save(filepath)
-                relative_path = os.path.join('uploads', 'qr_codes', filename).replace('\\', '/')
+                relative_path = upload_image_to_cloud_or_disk(file, 'qr_codes')
                 Shop.update_qr_code(shop['id'], relative_path, upi_id)
                 flash('QR Code and UPI ID updated successfully!', 'success')
             else:
@@ -546,18 +629,7 @@ def shopkeeper_upload_image():
             return redirect(request.url)
         
         if file and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-            # Create unique filename
-            filename = f"shop_{shop['id']}_{secrets.token_hex(4)}.png"
-            file_path = os.path.join(SHOP_LOGO_FOLDER, filename)
-            
-            # Ensure the directory exists (extra safety)
-            os.makedirs(SHOP_LOGO_FOLDER, exist_ok=True)
-            
-            # Save the file
-            file.save(file_path)
-            
-            # Save relative path to database
-            logo_path = f"static/uploads/shop_logos/{filename}"
+            logo_path = upload_image_to_cloud_or_disk(file, 'shop_logos')
             Shop.update(shop['id'], logo_path=logo_path)
             
             flash('Shop image updated successfully!', 'success')
@@ -598,15 +670,24 @@ def shopkeeper_menu():
                 flash('Invalid price', 'error')
                 return redirect(request.url)
             
-            # Handle image upload to work on Vercel (base64)
+            # Handle image upload to work on Vercel/Render (Cloudinary with base64 fallback)
             image_path = None
             if 'image' in request.files:
                 file = request.files['image']
                 if file.filename != '' and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                    import base64
-                    encoded_string = base64.b64encode(file.read()).decode('utf-8')
-                    mime_type = file.mimetype if file.mimetype else 'image/jpeg'
-                    image_path = f"data:{mime_type};base64,{encoded_string}"
+                    config = cloudinary.config()
+                    if config.cloud_name and config.api_key and config.api_secret:
+                        try:
+                            upload_result = cloudinary.uploader.upload(file, folder="foodexpress/food_images")
+                            image_path = upload_result.get('secure_url')
+                        except Exception as e:
+                            print(f"[CLOUDINARY ERROR] Food image upload failed: {str(e)}")
+                    
+                    if not image_path:
+                        import base64
+                        encoded_string = base64.b64encode(file.read()).decode('utf-8')
+                        mime_type = file.mimetype if file.mimetype else 'image/jpeg'
+                        image_path = f"data:{mime_type};base64,{encoded_string}"
             
             FoodItem.create(shop['id'], name, price, description, category, image_path)
             flash('Food item added successfully!', 'success')
@@ -637,10 +718,22 @@ def shopkeeper_menu():
             if 'image' in request.files:
                 file = request.files['image']
                 if file.filename != '' and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                    import base64
-                    encoded_string = base64.b64encode(file.read()).decode('utf-8')
-                    mime_type = file.mimetype if file.mimetype else 'image/jpeg'
-                    update_data['image_path'] = f"data:{mime_type};base64,{encoded_string}"
+                    image_path = None
+                    config = cloudinary.config()
+                    if config.cloud_name and config.api_key and config.api_secret:
+                        try:
+                            upload_result = cloudinary.uploader.upload(file, folder="foodexpress/food_images")
+                            image_path = upload_result.get('secure_url')
+                        except Exception as e:
+                            print(f"[CLOUDINARY ERROR] Food image update failed: {str(e)}")
+                    
+                    if image_path:
+                        update_data['image_path'] = image_path
+                    else:
+                        import base64
+                        encoded_string = base64.b64encode(file.read()).decode('utf-8')
+                        mime_type = file.mimetype if file.mimetype else 'image/jpeg'
+                        update_data['image_path'] = f"data:{mime_type};base64,{encoded_string}"
             
             FoodItem.update(item_id, **update_data)
             flash('Food item updated successfully!', 'success')
@@ -1387,13 +1480,7 @@ def upload_payment_screenshot():
         return jsonify({'error': 'No file selected'}), 400
     
     if file and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"payment_{order_data['order_id']}_{timestamp}_{secure_filename(file.filename)}"
-        filepath = os.path.join(PAYMENT_FOLDER, filename)
-        file.save(filepath)
-        
-        # Update order
-        relative_path = os.path.join('uploads', 'payment_screenshots', filename)
+        relative_path = upload_image_to_cloud_or_disk(file, 'payment_screenshots')
         Order.update_payment_screenshot(order_data['order_id'], relative_path)
         
         return jsonify({

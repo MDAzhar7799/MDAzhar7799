@@ -631,7 +631,7 @@
                         <div class="prod-badge">
                             <div class="prod-img">
                                 {% if item.image_path %}
-                                <img src="/{{ item.image_path }}" alt="{{ item.item_name }}">
+                                <img src="{{ item.image_path | img_url }}" alt="{{ item.item_name }}">
                                 {% else %}
                                 <div class="no-img"><i class="fas fa-pizza-slice" aria-hidden="true"></i></div>
                                 {% endif %}

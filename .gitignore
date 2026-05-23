@@ -14,7 +14,13 @@ pip-delete-this-directory.txt
 instance/
 .env
 user_logins.txt
+static/uploads/
+
 
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Scratch and custom scripts
+scratch/
+

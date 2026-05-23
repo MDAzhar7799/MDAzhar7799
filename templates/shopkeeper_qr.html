@@ -393,7 +393,7 @@
                     <label style="display: block; font-weight: 800; font-size: 0.75rem; color: var(--m-muted); text-transform: uppercase; margin-bottom: 10px;" id="preview-label">
                         {% if shop['qr_code_path'] %}Current QR Code{% else %}New QR Code Preview{% endif %}
                     </label>
-                    <img src="{% if shop['qr_code_path'] %}/{{ shop['qr_code_path'] }}{% endif %}" class="qr-preview" alt="QR Code" id="qr-preview-img">
+                    <img src="{{ shop['qr_code_path'] | img_url }}" class="qr-preview" alt="QR Code" id="qr-preview-img">
                 </div>
 
                 <div class="input-group">

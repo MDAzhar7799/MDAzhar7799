@@ -757,7 +757,7 @@
             
             <div class="shop-img">
                 {% if shop.logo_path %}
-                    <img src="/{{ shop.logo_path }}" 
+                    <img src="{{ shop.logo_path | img_url }}" 
                          onerror="this.src='https://images.unsplash.com/photo-1552566626-52f8b828add9?w=500&q=80'"
                          alt="{{ shop.name }}">
                 {% else %}
