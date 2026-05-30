@@ -753,7 +753,7 @@
                                 <div class="price">
                                     ₹{{ item.price }}
                                 </div>
-                                <button class="btn-add-cart" id="btn-{{ item.id }}" onclick='addToCart({{ item.id }}, {{ item.name | tojson }}, {{ item.price }}, this, {{ (item.image_path or "") | tojson }})'>
+                                <button class="btn-add-cart" id="btn-{{ item.id }}" onclick='addToCart({{ item.id }}, {{ item.name | tojson }}, {{ item.price }}, this)'>
                                     <i class="fas fa-plus"></i> ADD
                                 </button>
                             </div>
@@ -860,18 +860,40 @@
 <script>
     const shopIdVal = {{ shop.id | tojson | safe }};
     const shopName   = {{ shop.name | tojson | safe }};
-    const isLoggedIn = {{ (session.user_id is not none) | tojson | safe }};
+    const isLoggedIn = {{ session.get('user_id') | tojson | safe }} ? true : false;
+    const loginUrl = "{{ url_for('login') }}" + "?next=" + encodeURIComponent(window.location.pathname);
     const deliveryCharge = {{ shop.delivery_charge or 20 }};
     const deliveryAvailable = true;
 
     let cartItems = JSON.parse(localStorage.getItem('food_cart') || '[]');
     let cartItemsThisShop = cartItems.filter(i => i.shopId === shopIdVal);
 
-    function addToCart(id, name, price, btn, imagePath) {
+    // Build image map from server data (avoids putting large base64 in onclick attributes)
+    const foodImageMap = {
+        {% for item in food_items %}
+        {% if item.image_path and not item.image_path.startswith('data:') %}
+        {{ item.id }}: {{ (item.image_path or '') | img_url | tojson }},
+        {% endif %}
+        {% endfor %}
+    };
+
+    // If user is NOT logged in, clicking ANYWHERE on a food card redirects to login
+    if (!isLoggedIn) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.food-card').forEach(function(card) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = loginUrl;
+                });
+            });
+        });
+    }
+
+    function addToCart(id, name, price, btn) {
         if (!isLoggedIn) { 
-            const modal = document.getElementById('loginModal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
+            window.location.href = loginUrl;
             return; 
         }
         
@@ -881,7 +903,8 @@
         if (existing) {
             existing.quantity += 1;
         } else {
-            fullCart.push({ id, name, price, quantity: 1, shopId: shopIdVal, shopName: shopName, imagePath: imagePath || '' });
+            const imagePath = foodImageMap[id] || '';
+            fullCart.push({ id, name, price, quantity: 1, shopId: shopIdVal, shopName: shopName, imagePath: imagePath });
         }
         
         localStorage.setItem('food_cart', JSON.stringify(fullCart));

@@ -222,7 +222,7 @@ shopkeepers_to_seed = [
             'items': [
                 ('Paneer Butter Masala', 'Creamy paneer curry with rich tomato gravy', 120.0, 'North Indian', None),
                 ('Veg Biryani', 'Aromatic rice with mixed vegetables', 100.0, 'Rice', None),
-                ('Chole Bhature', 'Spicy chickpeas with fried bread', 80.0, 'North Indian', None),
+                ('Chole Bhature', 'Spicy chickpeas with fried bread', 80.0, 'North Indian', 'uploads/food_images/chole_bhature.png'),
                 ('Masala Dosa', 'Crispy rice crepe with potato filling', 90.0, 'South Indian', None),
                 ('Cold Coffee', 'Refreshing cold coffee with ice cream', 60.0, 'Beverages', 'uploads/food_images/food_1_20260427_214413_Affogato.png'),
                 ('Dam Biryani', 'kashmir', 100.0, 'special', 'uploads/food_images/food_1_20260309_000156_dosa.png')

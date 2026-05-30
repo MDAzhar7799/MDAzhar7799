@@ -592,7 +592,7 @@ class Order:
         conn = get_db_connection()
         order = conn.execute(
             """SELECT o.*, s.name as shop_name, s.phone as shop_phone, s.location as shop_location,
-                      u.name as customer_name, u.phone as customer_phone, u.email as customer_email,
+                      u.email as customer_email,
                       h.notes as cancellation_reason, h.updated_by as status_updated_by
                FROM orders o 
                JOIN shops s ON o.shop_id = s.id 
@@ -654,14 +654,8 @@ class Order:
         """Get all orders for a shop"""
         conn = get_db_connection()
         orders = conn.execute(
-            """SELECT o.*, u.name as customer_name, u.phone as customer_phone
+            """SELECT o.*
                FROM orders o 
-               JOIN users u ON o.user_id = u.id 
-               LEFT JOIN (
-                   SELECT order_id, updated_by,
-                          ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY created_at DESC) as rn
-                   FROM order_status_history
-               ) h ON o.id = h.order_id AND h.rn = 1
                WHERE o.shop_id = ? 
                ORDER BY o.created_at DESC""",
             (shop_id,)
@@ -674,7 +668,7 @@ class Order:
         """Get all orders (admin)"""
         conn = get_db_connection()
         orders = conn.execute(
-            """SELECT o.*, s.name as shop_name, u.name as customer_name, u.email as customer_email, u.phone as customer_phone
+            """SELECT o.*, s.name as shop_name, u.email as customer_email
                FROM orders o 
                JOIN shops s ON o.shop_id = s.id 
                JOIN users u ON o.user_id = u.id 
@@ -688,7 +682,7 @@ class Order:
         """Get all orders for a shop (admin) including all statuses"""
         conn = get_db_connection()
         orders = conn.execute(
-            """SELECT o.*, u.name as customer_name, u.email as customer_email, u.phone as customer_phone
+            """SELECT o.*, u.email as customer_email
                FROM orders o 
                JOIN users u ON o.user_id = u.id 
                WHERE o.shop_id = ? 

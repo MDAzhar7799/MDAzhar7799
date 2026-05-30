@@ -447,23 +447,9 @@
             if(badgeMob) badgeMob.innerText = count;
         }
 
-        function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('food_cart') || '[]');
+        function renderCart(cart, imageOverrides) {
             const container = document.getElementById('cartContent');
-            updateCartBadge();
-
-            if (cart.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-view">
-                        <i class="fas fa-bag-shopping"></i>
-                        <h2 style="font-size:2.2rem; font-weight:900; color:var(--m-green-dark);">Your bag is empty</h2>
-                        <p style="color:var(--m-muted); font-weight:600; margin-top:12px; font-size:1.1rem;">Seems you haven't authorized any food items yet.</p>
-                        <a href="{{ url_for('shops_list') }}" class="btn-browse">Browse Partners</a>
-                    </div>
-                `;
-                return;
-            }
-
+            
             let itemsHtml = '';
             let total = 0;
             
@@ -471,9 +457,20 @@
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 
-                const imgUrl = item.imagePath 
-                    ? (item.imagePath.startsWith('static/') ? `/${item.imagePath}` : `/static/${item.imagePath.replace(/\\/g, '/')}`)
-                    : null;
+                // Use override from server if available, otherwise use stored imagePath
+                let imgUrl = null;
+                const rawPath = imageOverrides[String(item.id)] || item.imagePath || '';
+                if (rawPath) {
+                    if (rawPath.startsWith('data:') || rawPath.startsWith('http://') || rawPath.startsWith('https://') || rawPath.startsWith('/')) {
+                        imgUrl = rawPath;
+                    } else if (rawPath.startsWith('uploads/')) {
+                        imgUrl = `/${rawPath}`;
+                    } else if (rawPath.startsWith('static/')) {
+                        imgUrl = `/${rawPath}`;
+                    } else {
+                        imgUrl = `/${rawPath}`;
+                    }
+                }
                 
                 itemsHtml += `
                     <div class="cart-item" style="animation-delay: ${index * 0.1}s">
@@ -510,6 +507,46 @@
                 </div>
             `;
         }
+
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('food_cart') || '[]');
+            const container = document.getElementById('cartContent');
+            updateCartBadge();
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-view">
+                        <i class="fas fa-bag-shopping"></i>
+                        <h2 style="font-size:2.2rem; font-weight:900; color:var(--m-green-dark);">Your bag is empty</h2>
+                        <p style="color:var(--m-muted); font-weight:600; margin-top:12px; font-size:1.1rem;">Seems you haven't authorized any food items yet.</p>
+                        <a href="{{ url_for('shops_list') }}" class="btn-browse">Browse Partners</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Find items missing imagePath — fetch from server
+            const missingIds = cart.filter(i => !i.imagePath).map(i => i.id);
+            
+            if (missingIds.length > 0) {
+                fetch('/api/food_images', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: missingIds })
+                })
+                .then(r => r.json())
+                .then(imageOverrides => {
+                    renderCart(cart, imageOverrides);
+                })
+                .catch(() => {
+                    renderCart(cart, {});
+                });
+            } else {
+                renderCart(cart, {});
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
 
         function updateQty(index, delta) {
             let cart = JSON.parse(localStorage.getItem('food_cart') || '[]');

@@ -400,7 +400,12 @@
                     <div class="form-group">
                         <label for="customer_phone">Phone Number <span style="color:#ef4444">*</span></label>
                         <input type="tel" id="customer_phone" name="customer_phone" required 
-                                placeholder="10-digit mobile number">
+                                value="{{ user_phone if user_phone else '' }}"
+                                placeholder="10-digit mobile number"
+                                pattern="[0-9]{10}" minlength="10" maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); validatePhone();">
+                        <span id="phoneError" style="color:#ef4444; font-size:0.82rem; font-weight:600; margin-top:6px; display:none;">Phone number must be exactly 10 digits</span>
+                        <span id="phoneValid" style="color:#22c55e; font-size:0.82rem; font-weight:600; margin-top:6px; display:none;">✓ Valid phone number</span>
                     </div>
                 </div>
             </div>
@@ -584,10 +589,49 @@
             element.querySelector('input').checked = true;
         }
         
+        function validatePhone() {
+            const phone = document.getElementById('customer_phone').value.replace(/[^0-9]/g, '');
+            const errEl = document.getElementById('phoneError');
+            const okEl = document.getElementById('phoneValid');
+            if (phone.length === 10) {
+                errEl.style.display = 'none';
+                okEl.style.display = 'inline';
+                return true;
+            } else if (phone.length > 0) {
+                errEl.style.display = 'inline';
+                okEl.style.display = 'none';
+                return false;
+            } else {
+                errEl.style.display = 'none';
+                okEl.style.display = 'none';
+                return false;
+            }
+        }
+
+        // Run validation on page load if phone is pre-filled
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('customer_phone').value.length > 0) validatePhone();
+        });
+
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const deliveryType = formData.get('delivery_type');
+            
+            // Validate customer name
+            const customerName = formData.get('customer_name').trim();
+            if (!customerName) {
+                alert('Please enter your full name.');
+                return;
+            }
+            
+            // Validate phone: exactly 10 digits
+            const phoneVal = formData.get('customer_phone').replace(/[^0-9]/g, '');
+            if (phoneVal.length !== 10) {
+                alert('Phone number must be exactly 10 digits.');
+                document.getElementById('customer_phone').focus();
+                return;
+            }
             
             if (deliveryType === 'delivery' && !formData.get('delivery_address').trim()) {
                 alert('Please enter complete delivery address details.');
@@ -603,8 +647,8 @@
             const orderData = {
                 shop_id: shopId,
                 items: checkoutItems,
-                customer_name: formData.get('customer_name'),
-                customer_phone: formData.get('customer_phone'),
+                customer_name: customerName,
+                customer_phone: phoneVal,
                 delivery_address: formData.get('delivery_address') || '',
                 delivery_type: deliveryType,
                 payment_type: formData.get('payment_type'),

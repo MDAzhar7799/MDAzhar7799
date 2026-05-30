@@ -1377,7 +1377,11 @@ def checkout_page():
     shop_id = checkout_data.get('shop_id')
     shop = Shop.get_by_id(shop_id) if shop_id else None
     
-    return render_template("checkout.html", checkout_data=checkout_data, shop=shop)
+    # Get user phone for pre-population
+    user = User.get_by_id(session['user_id'])
+    user_phone = user['phone'] if user and user.get('phone') else ''
+    
+    return render_template("checkout.html", checkout_data=checkout_data, shop=shop, user_phone=user_phone)
 
 
 @app.route("/payment/qr/<int:shop_id>")
@@ -1418,6 +1422,12 @@ def place_order():
     
     if not all([shop_id, items, delivery_type, payment_type, total_amount]):
         return jsonify({'error': 'Missing required fields'}), 400
+    
+    # Validate phone number: must be exactly 10 digits
+    phone_digits = ''.join(c for c in (customer_phone or '') if c.isdigit())
+    if len(phone_digits) != 10:
+        return jsonify({'error': 'Phone number must be exactly 10 digits'}), 400
+    customer_phone = phone_digits  # Store clean 10-digit number
     
     # Create order
     order_id, order_number = Order.create(
@@ -1578,6 +1588,23 @@ def get_cart_count():
         count = sum(item.get('quantity', 0) for item in checkout_data['items'])
         return jsonify({'count': count})
     return jsonify({'count': 0})
+
+
+@app.route("/api/food_images", methods=["POST"])
+def api_food_images():
+    """Return image URLs for food items by their IDs (used by cart page)"""
+    data = request.get_json()
+    if not data or 'ids' not in data:
+        return jsonify({})
+    
+    item_ids = data['ids']
+    result = {}
+    for item_id in item_ids:
+        item = FoodItem.get_by_id(item_id)
+        if item and item['image_path']:
+            result[str(item_id)] = img_url_filter(item['image_path'])
+    
+    return jsonify(result)
 
 
 @app.route("/api/shop/<int:shop_id>/menu")
